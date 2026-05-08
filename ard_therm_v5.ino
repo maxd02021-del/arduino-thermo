@@ -8,7 +8,7 @@ struct sensorData {
   float T1;
   float deltaT;
   float dT_dt;
-} sensorData;
+} tempData;
 
 void setup()
 {
@@ -38,5 +38,4 @@ void loop()
   Serial.print(", Change = ");
   Serial.println(sensorData.deltaT);
 
-  if (tempData.dT)
 }
