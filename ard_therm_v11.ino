@@ -13,7 +13,10 @@ struct tempInfo {
 float delayTime = 100;
 int N = 0;
 float sample[32];
+float magnitude[32] = {0};
 float f_k = 0;
+float maxMag = 0;
+int dominantK = 0;
 
 
 void setup()
@@ -29,15 +32,12 @@ void setup()
 
 void apply_dft()
 {
+  maxMag = 0;
+  dominantK = 0;
   float f_s = 1000 / delayTime;
-  
-
   float real[32] = {0};
   float imag[32] = {0};
-  float magnitude[32] = {0};
 
-  float maxMag = 0;
-  int dominantK = 0;
 
   for (int k = 0; k < 32; ++k){
     for (int n = 0; n < 32; ++n){
@@ -57,8 +57,10 @@ void apply_dft()
   f_k = (dominantK * f_s) / 32;
 }
 
+
  // Power mode and delay control
-void decide_power_mode(){
+void decide_power_mode()
+{
   if (f_k >= 0.5){
     delayTime = 500;
     Serial.print("ACTIVE MODE");
@@ -67,9 +69,27 @@ void decide_power_mode(){
     Serial.print("IDLE MODE");
   } else if (f_k < 0.1){
     delayTime = 10000;
-    Serial.print("LOW POWER MODE");
+    Serial.print("POWER_DOWN MODE");
   }
 }
+
+
+void send_data_to_pc()
+{
+  float time = millis() / 1000.0;
+
+  Serial.print("Time = ");
+  Serial.print(time);
+  Serial.print(", Temperature = ");
+  Serial.print(tempData.T1);
+  Serial.print(", Frequency = ");
+  Serial.print(f_k);
+  Serial.print(", Magnitude = ");
+  Serial.println(magnitude[dominantK]);
+
+}
+
+
 void loop()
 {
   tempData.T0 = tempData.T1;
@@ -90,12 +110,6 @@ void loop()
   }
 
   decide_power_mode();
- 
-  Serial.print(", Temperature = ");
-  Serial.print(tempData.T1);
-  Serial.print(", Change = ");
-  Serial.print(tempData.deltaT);
-  Serial.print(", DFT f_k = ");
-  Serial.println(f_k);
+  send_data_to_pc();
 
 }
